@@ -6,7 +6,7 @@ console.log("VUE_APP_SERVER_API_HOST:" + SERVER_API_HOST)
 const apiClient: AxiosInstance = axios.create({
   // baseURL: "http://localhost:13331/sbom",
   // baseURL: "https://sbom-service.test.osinfra.cn/sbom",
-  baseURL: SERVER_API_HOST + `/sbom`,
+  baseURL: SERVER_API_HOST + `/sbom-api`,
 
   headers: {
     // "Content-type": "application/json",

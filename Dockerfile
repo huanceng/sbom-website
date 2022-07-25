@@ -4,13 +4,11 @@ RUN mkdir -p /app
 WORKDIR /app
 COPY . /app
 
-RUN npm config set registry https://registry.npmmirror.com/
-RUN npm install -g @vue/cli
-RUN npm install -g http-server
-
-RUN npm install
-
-RUN npm run build-production
+RUN npm config set registry https://registry.npmmirror.com/ \
+    && npm install -g @vue/cli \
+    && npm install -g http-server \
+    && npm install \
+    && npm run build-production
 
 EXPOSE 8080
 
