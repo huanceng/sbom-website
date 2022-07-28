@@ -159,7 +159,7 @@ export default defineComponent({
           this.licenseTable = licenseTable;
         })
         .catch((e: Error) => {
-          console.log(e);
+          console.error('query package details failed:', { e });
         });
     },
 
@@ -171,7 +171,7 @@ export default defineComponent({
           this.externalManagerList = response.data.externalList;
         })
         .catch((e: Error) => {
-          console.log(e);
+          console.error('query package binary failed:', { e });
         });
 
     },
