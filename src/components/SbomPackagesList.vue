@@ -8,7 +8,8 @@
       </el-col>
       <el-col :span="6">
         <div class="grid-content ep-bg-purple">
-          <el-input v-model="packageName" placeholder="输入查询内容" :prefix-icon="Search" clearable @keyup.enter="retrievePackages"/>
+          <el-input v-model="packageName" placeholder="输入查询内容" :prefix-icon="Search" clearable
+            @keyup.enter="retrievePackages" />
         </div>
       </el-col>
       <el-col :span="1.5">
@@ -54,8 +55,7 @@ import { defineComponent, ref } from "vue";
 import { Search } from '@element-plus/icons-vue'
 import SbomDataService from "@/services/SbomDataService";
 import ResponseData from "@/types/ResponseData";
-
-const PRODUCT_ID = 'openEuler-22.03-LTS-x86_64-everything';
+import { IsSelectArtifact } from "@/utils"
 
 export default defineComponent({
   name: "sbom-packages-list",
@@ -94,10 +94,12 @@ export default defineComponent({
     },
 
     retrievePackages() {
+      if (!IsSelectArtifact()) return;
+
       let requestParam = new FormData()
-      requestParam.append('productId', PRODUCT_ID)
-      requestParam.append('page', String(this.pageNum - 1))
-      requestParam.append('size', String(this.pageSize))
+      requestParam.append('productId', (window as any).SBOM_PRODUCT_NAME);
+      requestParam.append('page', String(this.pageNum - 1));
+      requestParam.append('size', String(this.pageSize));
 
       if (this.packageName) {
         requestParam.append('packageName', String(this.packageName))
@@ -110,7 +112,7 @@ export default defineComponent({
           this.totalElements = response.data.totalElements;
         })
         .catch((e: Error) => {
-          console.log(e);
+          console.error('query sbom packages pageable failed:', { e });
         });
     },
 

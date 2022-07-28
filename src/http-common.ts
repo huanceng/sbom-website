@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 
-const SERVER_API_HOST = process.env.VUE_APP_SERVER_API_HOST;
+export const SERVER_API_HOST = process.env.VUE_APP_SERVER_API_HOST;
 console.log("VUE_APP_SERVER_API_HOST:" + SERVER_API_HOST)
 
 const apiClient: AxiosInstance = axios.create({

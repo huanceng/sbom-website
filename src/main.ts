@@ -6,4 +6,5 @@ import ElementPlus from 'element-plus'
 import 'element-plus/theme-chalk/index.css'
 import router from "@/router";
 
-createApp(App).use(router).use(ElementPlus).mount("#app");
+const app =createApp(App).use(router).use(ElementPlus);
+app.mount("#app");

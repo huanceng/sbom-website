@@ -13,20 +13,235 @@
           <router-link to="/sbomTraceChain" class="nav-link">开源软件反向追溯链</router-link>
         </li>
       </div>
+      <div>
+        <el-tooltip placement="bottom" :disabled="productNameDisabled">
+          <template #content>当前制品： {{ productName }} </template>
+          <el-button type="info" @click="productDrawer = true">选择制品信息</el-button>
+        </el-tooltip>
+        <el-button type="info" :icon="downloadIcon" @click="downloadSbom"></el-button>
+      </div>
     </nav>
 
     <div>
       <!-- <div class="container mt-3"> -->
-      <router-view />
+      <router-view v-if="isRouterAlive" />
     </div>
+
+    <el-drawer v-model="productDrawer" title="I am the title" :with-header="false">
+      <div>
+        <span>选择制品信息</span>
+      </div>
+      <el-divider />
+      <div>
+        <span>开源社区：</span>
+        <el-select v-model="productType" class="m-2" placeholder="Select" size="large"
+          @change="handleProductTypeChange">
+          <el-option v-for="item in productTypeList" :key="item" :label="item" :value="item" />
+        </el-select>
+      </div>
+      <el-divider />
+
+      <div>
+        <el-form ref="productFormRef" :model="productForm.data" :rules="productForm.rules" label-width="auto">
+          <el-row v-for="(item, key) in productConfigList" :key="key" :gutter="12">
+            <el-col :span="22">
+              <el-form-item :label="item.label + '：'" :prop="item.name" label-width="120px">
+                <FormItem :formData="productForm" :data="item">
+                </FormItem>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row v-if="productConfigList && productConfigList.length">
+            <el-col :span="24">
+              <el-form-item>
+                <el-button type="primary" :icon="Search" @click="queryArtifactInfo(productFormRef)">查询</el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+
+    </el-drawer>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { FormInstance, ElMessage, ElLoading } from 'element-plus'
+import { Download, Search } from '@element-plus/icons-vue'
+import { defineComponent, ref, reactive, nextTick } from "vue";
+import SbomDataService from "@/services/SbomDataService";
+import ResponseData from "@/types/ResponseData";
+import FormItem from '@/components/ProductFormItem';
+import ProductItemConfig from '@/types/ProductItemConfig';
+import { ParseFileNameFromHeader, ShowLoading, HideLoading } from '@/utils';
+
 
 export default defineComponent({
   name: "App",
+  components: {
+    FormItem
+  },
+  setup() {
+    const productFormRef = ref<FormInstance>();
+    return {
+      productFormRef
+    }
+  },
+  data() {
+    let productName = (window as any).SBOM_PRODUCT_NAME ? (window as any).SBOM_PRODUCT_NAME : "";
+    return {
+      isRouterAlive: true,
+      productDrawer: ref(false),
+      downloadIcon: Download,
+      Search: Search,
+
+      productName: productName,
+      productNameDisabled: productName == null || productName == undefined || productName == "",
+      productType: "",
+
+      productTypeList: [],
+      productConfigList: [] as ProductItemConfig[],
+
+      productForm: reactive({
+        data: {},
+        rules: {},
+      }),
+
+    }
+  },
+  methods: {
+    downloadSbom() {
+      if (this.productName) {
+        ShowLoading('文件生成中....');
+
+        let requestParam = new FormData()
+        requestParam.append('productId', this.productName)
+        requestParam.append('spec', "spdx");
+        requestParam.append('specVersion', "2.2");
+        requestParam.append('format', "json");
+        SbomDataService.exportSbom(requestParam)
+          .then((response: ResponseData) => {
+            HideLoading();
+
+            let fileName = ParseFileNameFromHeader(response);
+            var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+            var fileLink = document.createElement('a');
+            fileLink.href = fileURL;
+            fileLink.setAttribute('download', fileName);
+            document.body.appendChild(fileLink);
+            fileLink.click();
+          })
+          .catch((e: Error) => {
+            HideLoading();
+            console.error('download sbom failed:', { e });
+          });
+      } else {
+        this.openProductDrawer();
+        ElMessage({
+          showClose: true,
+          message: '请先选择制品信息',
+          type: 'warning',
+        })
+      }
+    },
+
+    openProductDrawer() {
+      this.productDrawer = true;
+    },
+
+    getProductTypeList() {
+      SbomDataService.queryProductType()
+        .then((response: ResponseData) => {
+          this.productTypeList = response.data;
+        })
+        .catch((e: Error) => {
+          console.error('query product type list failed:', { e });
+        });
+    },
+
+    async queryArtifactInfo(formElem: FormInstance | undefined) {
+      if (!formElem) return
+      await formElem.validate((valid, fields) => {
+        if (valid) {
+          SbomDataService.queryProduct(this.productType, this.productForm.data)
+            .then((response: ResponseData) => {
+              this.productName = response.data.name;
+              this.productNameDisabled = false;
+              (window as any).SBOM_PRODUCT_NAME = response.data.name;
+              this.productDrawer = false;
+              this.reload();
+            })
+            .catch((e: any) => {
+              console.error('query artifact info failed:', { e });
+              if (e['response'] && e['response']['status'] == 500) {
+                ElMessage.error(e['response']['data'])
+              }
+            });
+
+        }
+      })
+    },
+
+    handleProductTypeChange(productType: string) {
+      SbomDataService.queryProductConfig(productType)
+        .then((response: ResponseData) => {
+          this.productConfigList = response.data;
+
+          if (this.productConfigList) {
+            // 动态拼装表单对象&表单校验规则
+            let formDataMap: Record<string, any> = {};
+            let formRuleMap: Record<string, any> = {};
+
+            this.productConfigList.forEach(productConfig => {
+              if (productConfig.valueType == 'string') {
+                formDataMap[productConfig.name] = "";
+                formRuleMap[productConfig.name] = [
+                  { required: true, message: '请输入 ' + productConfig.name, trigger: 'blur' }
+                ];
+
+              } else if (productConfig.valueType == 'number') {
+                formDataMap[productConfig.name] = 0;
+                formRuleMap[productConfig.name] = [
+                  { required: true, message: '请输入 ' + productConfig.name },
+                  { type: 'number', message: productConfig.name + '必须是数字' },
+                ]
+
+              } else if (productConfig.valueType.startsWith('enum')) {
+                formDataMap[productConfig.name] = "";
+                formRuleMap[productConfig.name] = [
+                  { required: true, message: '请选择 ' + productConfig.name, trigger: 'change' }
+                ];
+
+              }
+            });
+            this.productForm.data = reactive(formDataMap);
+            this.productForm.rules = reactive(formRuleMap);
+
+          }
+        })
+        .catch((e: Error) => {
+          console.error('query product config failed:', { e });
+        });
+    },
+
+    reload() {
+      this.isRouterAlive = false;
+      this.$nextTick(function () {
+        this.isRouterAlive = true;
+      })
+    }
+
+  },
+
+  provide() {
+    return {
+      reload: this.reload
+    }
+  },
+
+  mounted() {
+    this.getProductTypeList();
+  },
 });
 </script>
 

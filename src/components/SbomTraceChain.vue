@@ -65,8 +65,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import SbomDataService from "@/services/SbomDataService";
 import ResponseData from "@/types/ResponseData";
-
-const PRODUCT_ID = 'openEuler-22.03-LTS-x86_64-everything';
+import { IsSelectArtifact } from "@/utils"
 
 export default defineComponent({
   name: "sbom-packages-list",
@@ -143,11 +142,13 @@ export default defineComponent({
     },
 
     async retrieveBinary(formEl: FormInstance | undefined) {
-      if (!formEl) return
+      if (!formEl) return;
+      if (!IsSelectArtifact()) return;
+
       await formEl.validate((valid, fields) => {
         if (valid) {
           let requestParam = new FormData()
-          requestParam.append('productId', PRODUCT_ID)
+          requestParam.append('productId', (window as any).SBOM_PRODUCT_NAME)
           requestParam.append('binaryType', this.conditionForm.binaryType);
           requestParam.append('type', this.conditionForm.type);
           requestParam.append('namespace', this.conditionForm.namespace);
@@ -162,7 +163,7 @@ export default defineComponent({
               this.totalElements = response.data.totalElements;
             })
             .catch((e: Error) => {
-              console.log(e);
+              console.error('query sbom packages by binary failed:', { e });
             });
         }
       })
