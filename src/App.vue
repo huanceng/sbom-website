@@ -2,10 +2,10 @@
   <div id="app">
     <nav class="navbar navbar-expand navbar-dark bg-dark">
       <router-link to="/" class="navbar-brand">SBOM Service</router-link>
-      <div class="navbar-nav mr-auto">
-        <li class="nav-item">
+      <div class="navbar-nav mr-auto" v-show="$route.name != 'package-details'">
+        <!-- <li class="nav-item">
           <router-link to="/sbomDashboard" class="nav-link">风险看板</router-link>
-        </li>
+        </li> -->
         <li class="nav-item">
           <router-link to="/sbomPackages" class="nav-link">软件成分查询</router-link>
         </li>
@@ -13,14 +13,26 @@
           <router-link to="/sbomTraceChain" class="nav-link">开源软件反向追溯链</router-link>
         </li>
       </div>
-      <div>
+      <!-- <div>
         <el-tooltip placement="bottom" :disabled="productNameDisabled">
           <template #content>当前制品： {{ productName }} </template>
           <el-button type="info" @click="productDrawer = true">选择制品信息</el-button>
         </el-tooltip>
         <el-button type="info" :icon="downloadIcon" @click="downloadSbom"></el-button>
-      </div>
+      </div> -->
     </nav>
+    <div class="sbom-header sbom-product-name" v-show="$route.name != 'package-details'">
+      <el-row :gutter="20">
+        <el-col :span="23">
+          <el-page-header :icon="Expand" title="选择制品信息" :content="productName" @back="openProductDrawer" />
+        </el-col>
+        <el-col :span="1">
+          <el-button type="info" :icon="downloadIcon" @click="downloadSbom"></el-button>
+        </el-col>
+      </el-row>
+      <el-divider />
+    </div>
+
 
     <div>
       <!-- <div class="container mt-3"> -->
@@ -66,15 +78,15 @@
 </template>
 
 <script lang="ts">
-import { FormInstance, ElMessage, ElLoading } from 'element-plus'
-import { Download, Search } from '@element-plus/icons-vue'
-import { defineComponent, ref, reactive, nextTick } from "vue";
+import { FormInstance, ElMessage } from 'element-plus'
+import { Download, Search, Expand } from '@element-plus/icons-vue'
+import { defineComponent, ref, reactive } from "vue";
 import SbomDataService from "@/services/SbomDataService";
 import ResponseData from "@/types/ResponseData";
 import FormItem from '@/components/ProductFormItem';
 import ProductItemConfig from '@/types/ProductItemConfig';
-import { ParseFileNameFromHeader, ShowLoading, HideLoading } from '@/utils';
-
+import { ParseFileNameFromHeader, ShowLoading, HideLoading, IsSelectArtifact, productDrawer, openProductDrawer, closeProductDrawer } from '@/utils';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: "App",
@@ -91,9 +103,13 @@ export default defineComponent({
     let productName = (window as any).SBOM_PRODUCT_NAME ? (window as any).SBOM_PRODUCT_NAME : "";
     return {
       isRouterAlive: true,
-      productDrawer: ref(false),
       downloadIcon: Download,
       Search: Search,
+      Expand: Expand,
+      useRouter: useRouter,
+
+      productDrawer: productDrawer,
+      openProductDrawer: openProductDrawer,
 
       productName: productName,
       productNameDisabled: productName == null || productName == undefined || productName == "",
@@ -111,42 +127,32 @@ export default defineComponent({
   },
   methods: {
     downloadSbom() {
-      if (this.productName) {
-        ShowLoading('文件生成中....');
+      if (!IsSelectArtifact()) {
+        return;
+      };
+      ShowLoading('文件生成中....');
 
-        let requestParam = new FormData()
-        requestParam.append('productId', this.productName)
-        requestParam.append('spec', "spdx");
-        requestParam.append('specVersion', "2.2");
-        requestParam.append('format', "json");
-        SbomDataService.exportSbom(requestParam)
-          .then((response: ResponseData) => {
-            HideLoading();
+      let requestParam = new FormData()
+      requestParam.append('productId', this.productName)
+      requestParam.append('spec', "spdx");
+      requestParam.append('specVersion', "2.2");
+      requestParam.append('format', "json");
+      SbomDataService.exportSbom(requestParam)
+        .then((response: ResponseData) => {
+          HideLoading();
 
-            let fileName = ParseFileNameFromHeader(response);
-            var fileURL = window.URL.createObjectURL(new Blob([response.data]));
-            var fileLink = document.createElement('a');
-            fileLink.href = fileURL;
-            fileLink.setAttribute('download', fileName);
-            document.body.appendChild(fileLink);
-            fileLink.click();
-          })
-          .catch((e: Error) => {
-            HideLoading();
-            console.error('download sbom failed:', { e });
-          });
-      } else {
-        this.openProductDrawer();
-        ElMessage({
-          showClose: true,
-          message: '请先选择制品信息',
-          type: 'warning',
+          let fileName = ParseFileNameFromHeader(response);
+          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+          var fileLink = document.createElement('a');
+          fileLink.href = fileURL;
+          fileLink.setAttribute('download', fileName);
+          document.body.appendChild(fileLink);
+          fileLink.click();
         })
-      }
-    },
-
-    openProductDrawer() {
-      this.productDrawer = true;
+        .catch((e: Error) => {
+          HideLoading();
+          console.error('download sbom failed:', { e });
+        });
     },
 
     getProductTypeList() {
@@ -168,7 +174,7 @@ export default defineComponent({
               this.productName = response.data.name;
               this.productNameDisabled = false;
               (window as any).SBOM_PRODUCT_NAME = response.data.name;
-              this.productDrawer = false;
+              closeProductDrawer();
               this.reload();
             })
             .catch((e: any) => {
@@ -257,6 +263,14 @@ export default defineComponent({
 
 <style>
 .sbom-service {
-  margin: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.sbom-header {
+  margin-left: 20px;
+  margin-top: 20px;
 }
 </style>

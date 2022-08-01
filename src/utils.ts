@@ -1,5 +1,6 @@
 import { ElLoading, ElMessage } from 'element-plus'
 import ResponseData from "@/types/ResponseData";
+import { ref } from "vue";
 
 export function ParseFileNameFromHeader(response: ResponseData) {
     const contentDispositionArr = response.headers['content-disposition']?.split('attachment;filename=');
@@ -26,6 +27,7 @@ export function IsSelectArtifact(): boolean {
             message: '请先选择制品信息',
             type: 'warning',
         })
+        openProductDrawer();
         return false;
     }
     return true;
@@ -40,4 +42,14 @@ export function NoAssertionFormat(row: any, colum: any, cellValue: string, index
         return ''
     };
     return cellValue;
+}
+
+export const productDrawer = ref(false);
+
+export function openProductDrawer(): void {
+    productDrawer.value = true;
+}
+
+export function closeProductDrawer(): void {
+    productDrawer.value = false;
 }
