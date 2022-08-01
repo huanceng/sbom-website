@@ -216,12 +216,22 @@ export default defineComponent({
             });
             this.productForm.data = reactive(formDataMap);
             this.productForm.rules = reactive(formRuleMap);
+            // reset form validate
+            setTimeout(() => {
+              this.resetProductForm();
+            })
 
           }
         })
         .catch((e: Error) => {
           console.error('query product config failed:', { e });
         });
+    },
+
+    resetProductForm() {
+      if (this.productFormRef) {
+        this.productFormRef.resetFields();
+      }
     },
 
     reload() {
