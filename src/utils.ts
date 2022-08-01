@@ -31,3 +31,13 @@ export function IsSelectArtifact(): boolean {
     return true;
 }
 
+export function NoAssertionFormat(row: any, colum: any, cellValue: string, index: any): string {
+    if (!cellValue) {
+        return cellValue;
+    }
+
+    if (cellValue.toUpperCase() === 'NOASSERTION' || cellValue.toUpperCase() === 'NONE') {
+        return ''
+    };
+    return cellValue;
+}

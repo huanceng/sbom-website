@@ -5,7 +5,7 @@
       <el-tab-pane label="SBOM元数据" name="detailsTable">
         <el-table :data="detailsTable" border :show-header="false">
           <el-table-column label="" prop="colName" width="300" />
-          <el-table-column label="" prop="colValue" />
+          <el-table-column label="" prop="colValue"  :formatter="NoAssertionFormat"/>
         </el-table>
       </el-tab-pane>
 
@@ -23,7 +23,7 @@
               <div>
                 <el-table ref="packageManagerTableRef" :data="filterPackageTable" stripe highlight-current-row
                   height="250" style="width: 100%">
-                  <el-table-column fixed type="index" label="PURL" width="100"/>
+                  <el-table-column fixed type="index" label="PURL" width="100" />
                   <el-table-column fixed property="type" label="包管理类型" width="100" />
                   <el-table-column property="namespace" label="namespace" />
                   <el-table-column property="name" label="name" />
@@ -96,7 +96,7 @@
       <el-tab-pane label="License" name="license">
         <el-table :data="licenseTable" border :show-header="false">
           <el-table-column label="" prop="colName" width="300" />
-          <el-table-column label="" prop="colValue" />
+          <el-table-column label="" prop="colValue" :formatter="NoAssertionFormat" />
         </el-table>
       </el-tab-pane>
 
@@ -112,6 +112,7 @@ import { PackageURL } from "packageurl-js";
 import SbomPackage from "@/types/SbomPackage";
 import ResponseData from "@/types/ResponseData";
 import SbomDataService from "@/services/SbomDataService";
+import { NoAssertionFormat } from "@/utils"
 
 export default defineComponent({
   name: "packageDetails",
@@ -175,6 +176,8 @@ export default defineComponent({
         });
 
     },
+
+    NoAssertionFormat,
 
   },
 
