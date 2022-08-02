@@ -34,10 +34,12 @@
       style="width: 100%">
       <el-table-column fixed type="index" width="70" :index="indexCounter" />
       <el-table-column fixed property="name" label="软件包名称" width="300" />
-      <el-table-column property="version" label="版本" width="300" />
-      <el-table-column property="licenseConcluded" label="License" :formatter="NoAssertionFormat"/>
-      <el-table-column property="copyright" label="Copyright"  :formatter="NoAssertionFormat"/>
-      <el-table-column property="supplier" label="Supplier" width="300"  :formatter="NoAssertionFormat"/>
+      <el-table-column property="version" label="版本(epoch:version-release)" width="300"
+        v-if="IsOpenEulerByProductName()" />
+      <el-table-column property="version" label="版本" width="300" v-else />
+      <el-table-column property="licenseConcluded" label="License" :formatter="NoAssertionFormat" />
+      <el-table-column property="copyright" label="Copyright" :formatter="NoAssertionFormat" />
+      <el-table-column property="supplier" label="Supplier" width="300" :formatter="NoAssertionFormat" />
       <el-table-column fixed="right" width="120">
         <template #default="props">
           <router-link :to="'/packageDetails/' + props.row.id" target="_blank" class="nav-link">详情</router-link>
@@ -55,7 +57,7 @@ import { defineComponent, ref } from "vue";
 import { Search } from '@element-plus/icons-vue'
 import SbomDataService from "@/services/SbomDataService";
 import ResponseData from "@/types/ResponseData";
-import { IsSelectArtifact, NoAssertionFormat } from "@/utils"
+import { IsSelectArtifact, NoAssertionFormat, IsOpenEulerByProductName } from "@/utils"
 
 export default defineComponent({
   name: "sbom-packages-list",
@@ -117,6 +119,8 @@ export default defineComponent({
     },
 
     NoAssertionFormat,
+
+    IsOpenEulerByProductName,
 
   },
   mounted() {

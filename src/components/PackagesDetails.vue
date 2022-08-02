@@ -5,7 +5,7 @@
       <el-tab-pane label="SBOM元数据" name="detailsTable">
         <el-table :data="detailsTable" border :show-header="false">
           <el-table-column label="" prop="colName" width="300" />
-          <el-table-column label="" prop="colValue"  :formatter="NoAssertionFormat"/>
+          <el-table-column label="" prop="colValue" :formatter="NoAssertionFormat" />
         </el-table>
       </el-tab-pane>
 
@@ -116,7 +116,7 @@ import { PackageURL } from "packageurl-js";
 import SbomPackage from "@/types/SbomPackage";
 import ResponseData from "@/types/ResponseData";
 import SbomDataService from "@/services/SbomDataService";
-import { NoAssertionFormat } from "@/utils"
+import { NoAssertionFormat, IsOpenEulerBySourceInfo } from "@/utils"
 
 export default defineComponent({
   name: "packageDetails",
@@ -147,7 +147,11 @@ export default defineComponent({
 
           let detailsTable = new Array(0);
           detailsTable.push({ "colName": "Name", "colValue": this.packageDetails.name });
-          detailsTable.push({ "colName": "Version", "colValue": this.packageDetails.version });
+          if (IsOpenEulerBySourceInfo(this.packageDetails)) {
+            detailsTable.push({ "colName": "Version(epoch:version-release)", "colValue": this.packageDetails.version });
+          } else {
+            detailsTable.push({ "colName": "Version", "colValue": this.packageDetails.version });
+          }
           detailsTable.push({ "colName": "Homepage", "colValue": this.packageDetails.homepage });
           detailsTable.push({ "colName": "Supplier", "colValue": this.packageDetails.supplier });
           detailsTable.push({ "colName": "Description", "colValue": this.packageDetails.description });

@@ -1,5 +1,6 @@
 import { ElLoading, ElMessage } from 'element-plus'
 import ResponseData from "@/types/ResponseData";
+import SbomPackage from "@/types/SbomPackage";
 import { ref } from "vue";
 
 export function ParseFileNameFromHeader(response: ResponseData) {
@@ -52,4 +53,30 @@ export function openProductDrawer(): void {
 
 export function closeProductDrawer(): void {
     productDrawer.value = false;
+}
+
+export function IsOpenEulerByProductName(): boolean {
+    const productName = (window as any).SBOM_PRODUCT_NAME;
+    if (!productName) {
+        return false;
+    }
+    return stringIncludeIgnoreCase(productName, 'openEuler');
+}
+
+export function IsOpenEulerBySourceInfo(pkgInfo: SbomPackage): boolean {
+    if (!pkgInfo) {
+        return false;
+    }
+    return stringIncludeIgnoreCase(pkgInfo.sourceInfo, 'repodata');
+}
+
+function stringIncludeIgnoreCase(targetString: string, searchString: string) {
+    if (!targetString) {
+        return false;
+    }
+    if (!searchString) {
+        return false;
+    }
+
+    return targetString.toLowerCase().includes(searchString.toLowerCase());
 }
