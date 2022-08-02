@@ -13,12 +13,16 @@
         <el-col :span="4">
           <el-form-item label="包管理器类型" prop="type">
             <el-select v-model="conditionForm.type" placeholder="请选择包管理器类型">
+              <el-option label="RPM" value="rpm" />
               <el-option label="Maven" value="maven" />
+              <el-option label="Pypi" value="pypi" />
+              <el-option label="Gitee" value="gitee" />
+              <el-option label="Github" value="github" />
+              <el-option label="Gitlab" value="gitlab" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="6">
-
+        <el-col :span="6" v-show="conditionForm.type === 'maven'">
           <el-form-item label="namespace">
             <el-input v-model="conditionForm.namespace" clearable />
           </el-form-item>
