@@ -87,7 +87,7 @@
                   <span>Runtime Dependency</span>
                 </div>
               </template>
-              <div class="text item">content</div>
+              <div class="text item">No Data</div>
             </el-card>
           </el-col>
         </el-row>
@@ -104,7 +104,7 @@
 
       <el-tab-pane label="上游社区" name="upstream">上游社区信息</el-tab-pane>
 
-      <el-tab-pane label="Patch" name="vulnerable">patch信息</el-tab-pane>
+      <el-tab-pane label="Patch" name="patch">patch信息</el-tab-pane>
     </el-tabs>
   </div>
 </template>
