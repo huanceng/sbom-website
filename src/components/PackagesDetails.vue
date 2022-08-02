@@ -5,7 +5,7 @@
       <el-tab-pane label="SBOM元数据" name="detailsTable">
         <el-table :data="detailsTable" border :show-header="false">
           <el-table-column label="" prop="colName" width="300" />
-          <el-table-column label="" prop="colValue" />
+          <el-table-column label="" prop="colValue" :formatter="NoAssertionFormat" />
         </el-table>
       </el-tab-pane>
 
@@ -15,7 +15,7 @@
             <el-card shadow="hover">
               <template #header>
                 <div class="search-header">
-                  <span>Package Info</span>
+                  <span>Package Info(PURL)</span>
                   <el-input v-model="searchPackage" class="w-25 m-2" size="small" placeholder="过滤namespace或name"
                     clearable />
                 </div>
@@ -23,7 +23,7 @@
               <div>
                 <el-table ref="packageManagerTableRef" :data="filterPackageTable" stripe highlight-current-row
                   height="250" style="width: 100%">
-                  <el-table-column fixed type="index" label="PURL" width="100"/>
+                  <el-table-column fixed type="index" label="PURL" width="100" />
                   <el-table-column fixed property="type" label="包管理类型" width="100" />
                   <el-table-column property="namespace" label="namespace" />
                   <el-table-column property="name" label="name" />
@@ -38,7 +38,7 @@
             <el-card shadow="hover">
               <template #header>
                 <div class="search-header">
-                  <span>Module Info</span>
+                  <span>Module Info(PURL)</span>
                   <el-input v-model="searchProvide" class="w-25 m-2" size="small" placeholder="过滤namespace或name"
                     clearable />
                 </div>
@@ -62,7 +62,7 @@
             <el-card shadow="hover">
               <template #header>
                 <div class="search-header">
-                  <span>Dependency</span>
+                  <span>Dependency(PURL)</span>
                   <el-input v-model="searchExternal" class="w-25 m-2" size="small" placeholder="过滤namespace或name"
                     clearable />
                 </div>
@@ -84,7 +84,7 @@
             <el-card shadow="hover">
               <template #header>
                 <div>
-                  <span>Runtime Dependency</span>
+                  <span>Runtime Dependency(PURL)</span>
                 </div>
               </template>
               <div class="text item">content</div>
@@ -96,11 +96,15 @@
       <el-tab-pane label="License" name="license">
         <el-table :data="licenseTable" border :show-header="false">
           <el-table-column label="" prop="colName" width="300" />
-          <el-table-column label="" prop="colValue" />
+          <el-table-column label="" prop="colValue" :formatter="NoAssertionFormat" />
         </el-table>
       </el-tab-pane>
 
       <el-tab-pane label="漏洞" name="vulnerable">漏洞</el-tab-pane>
+
+      <el-tab-pane label="上游社区" name="upstream">上游社区信息</el-tab-pane>
+
+      <el-tab-pane label="Patch" name="vulnerable">patch信息</el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -112,6 +116,7 @@ import { PackageURL } from "packageurl-js";
 import SbomPackage from "@/types/SbomPackage";
 import ResponseData from "@/types/ResponseData";
 import SbomDataService from "@/services/SbomDataService";
+import { NoAssertionFormat, IsOpenEulerBySourceInfo } from "@/utils"
 
 export default defineComponent({
   name: "packageDetails",
@@ -142,7 +147,11 @@ export default defineComponent({
 
           let detailsTable = new Array(0);
           detailsTable.push({ "colName": "Name", "colValue": this.packageDetails.name });
-          detailsTable.push({ "colName": "Version", "colValue": this.packageDetails.version });
+          if (IsOpenEulerBySourceInfo(this.packageDetails)) {
+            detailsTable.push({ "colName": "Version(epoch:version-release)", "colValue": this.packageDetails.version });
+          } else {
+            detailsTable.push({ "colName": "Version", "colValue": this.packageDetails.version });
+          }
           detailsTable.push({ "colName": "Homepage", "colValue": this.packageDetails.homepage });
           detailsTable.push({ "colName": "Supplier", "colValue": this.packageDetails.supplier });
           detailsTable.push({ "colName": "Description", "colValue": this.packageDetails.description });
@@ -175,6 +184,8 @@ export default defineComponent({
         });
 
     },
+
+    NoAssertionFormat,
 
   },
 
