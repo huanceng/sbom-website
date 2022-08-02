@@ -15,7 +15,7 @@
             <el-card shadow="hover">
               <template #header>
                 <div class="search-header">
-                  <span>Package Info(PURL)</span>
+                  <span>Package Info</span>
                   <el-input v-model="searchPackage" class="w-25 m-2" size="small" placeholder="过滤namespace或name"
                     clearable />
                 </div>
@@ -38,7 +38,7 @@
             <el-card shadow="hover">
               <template #header>
                 <div class="search-header">
-                  <span>Module Info(PURL)</span>
+                  <span>Module Info</span>
                   <el-input v-model="searchProvide" class="w-25 m-2" size="small" placeholder="过滤namespace或name"
                     clearable />
                 </div>
@@ -62,7 +62,7 @@
             <el-card shadow="hover">
               <template #header>
                 <div class="search-header">
-                  <span>Dependency(PURL)</span>
+                  <span>Dependency</span>
                   <el-input v-model="searchExternal" class="w-25 m-2" size="small" placeholder="过滤namespace或name"
                     clearable />
                 </div>
@@ -84,10 +84,10 @@
             <el-card shadow="hover">
               <template #header>
                 <div>
-                  <span>Runtime Dependency(PURL)</span>
+                  <span>Runtime Dependency</span>
                 </div>
               </template>
-              <div class="text item">content</div>
+              <div class="text item">No Data</div>
             </el-card>
           </el-col>
         </el-row>
@@ -104,7 +104,7 @@
 
       <el-tab-pane label="上游社区" name="upstream">上游社区信息</el-tab-pane>
 
-      <el-tab-pane label="Patch" name="vulnerable">patch信息</el-tab-pane>
+      <el-tab-pane label="Patch" name="patch">patch信息</el-tab-pane>
     </el-tabs>
   </div>
 </template>
