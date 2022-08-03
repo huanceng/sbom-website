@@ -47,9 +47,9 @@
     <el-table ref="singleTableRef" :data="pageData" stripe border highlight-current-row max-height="600"
       style="width: 100%">
       <el-table-column fixed type="index" width="70" :index="indexCounter" />
-      <el-table-column fixed property="purl" label="依赖描述符（PURL）" width="600" />
-      <el-table-column fixed property="name" label="关联软件包名称" width="250" />
-      <el-table-column property="version" label="版本" width="250" />
+      <el-table-column fixed property="purl" label="依赖描述符（PURL）" width="500" />
+      <el-table-column fixed property="name" label="关联软件包名称" width="200" />
+      <el-table-column property="version" label="版本" width="200" />
       <el-table-column property="description" label="软件包描述" />
       <el-table-column fixed="right" label="软件包详情" width="120">
         <template #default="props">
