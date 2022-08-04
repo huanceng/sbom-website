@@ -111,7 +111,6 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { PackageURL } from "packageurl-js";
 
 import SbomPackage from "@/types/SbomPackage";
 import ResponseData from "@/types/ResponseData";
@@ -221,8 +220,9 @@ const filterTableData: any = (searchExternal: string, tableDataList: Map<string,
 const transferPurl: any = (list: any) => {
   let purlList: any[] = []
   list.forEach((element: any) => {
-    let pkg = PackageURL.fromString(element.purl);
-    purlList.push(pkg);
+    if (element.type === 'purl') {
+      purlList.push(element.purl);
+    }
   });
   return purlList;
 }
