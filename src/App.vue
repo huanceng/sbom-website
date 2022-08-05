@@ -3,9 +3,9 @@
     <nav class="navbar navbar-expand navbar-dark bg-dark">
       <router-link to="/" class="navbar-brand">SBOM Service</router-link>
       <div class="navbar-nav mr-auto" v-show="$route.name != 'package-details'">
-        <!-- <li class="nav-item">
+        <li class="nav-item">
           <router-link to="/sbomDashboard" class="nav-link">风险看板</router-link>
-        </li> -->
+        </li>
         <li class="nav-item">
           <router-link to="/sbomPackages" class="nav-link">软件成分查询</router-link>
         </li>
@@ -27,12 +27,11 @@
           <el-page-header :icon="Expand" title="选择制品信息" :content="productName" @back="openProductDrawer" />
         </el-col>
         <el-col :span="1">
-          <el-button type="info" :icon="downloadIcon" @click="downloadSbom"></el-button>
+          <sbomDownloadPop :productName="productName" />
         </el-col>
       </el-row>
       <el-divider />
     </div>
-
 
     <div>
       <!-- <div class="container mt-3"> -->
@@ -84,14 +83,16 @@ import { defineComponent, ref, reactive } from "vue";
 import SbomDataService from "@/services/SbomDataService";
 import ResponseData from "@/types/ResponseData";
 import FormItem from '@/components/ProductFormItem';
+import sbomDownloadPop from '@/components/SbomDownloadPop.vue';
 import ProductItemConfig from '@/types/ProductItemConfig';
-import { ParseFileNameFromHeader, ShowLoading, HideLoading, IsSelectArtifact, productDrawer, openProductDrawer, closeProductDrawer } from '@/utils';
+import { productDrawer, openProductDrawer, closeProductDrawer } from '@/utils';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: "App",
   components: {
-    FormItem
+    FormItem,
+    sbomDownloadPop
   },
   setup() {
     const productFormRef = ref<FormInstance>();
@@ -126,34 +127,6 @@ export default defineComponent({
     }
   },
   methods: {
-    downloadSbom() {
-      if (!IsSelectArtifact()) {
-        return;
-      };
-      ShowLoading('文件生成中....');
-
-      let requestParam = new FormData()
-      requestParam.append('productId', this.productName)
-      requestParam.append('spec', "spdx");
-      requestParam.append('specVersion', "2.2");
-      requestParam.append('format', "json");
-      SbomDataService.exportSbom(requestParam)
-        .then((response: ResponseData) => {
-          HideLoading();
-
-          let fileName = ParseFileNameFromHeader(response);
-          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
-          var fileLink = document.createElement('a');
-          fileLink.href = fileURL;
-          fileLink.setAttribute('download', fileName);
-          document.body.appendChild(fileLink);
-          fileLink.click();
-        })
-        .catch((e: Error) => {
-          HideLoading();
-          console.error('download sbom failed:', { e });
-        });
-    },
 
     getProductTypeList() {
       SbomDataService.queryProductType()
